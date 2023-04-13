@@ -21,11 +21,11 @@ mongoClient.connect()
 //     //validar com joi
 // })
 
-app.get("/participants", (req, res => {
+app.get("/participants", (req, res) => {
     db.collection("participants").find().toArray()
         .then(participants => res.status(200).send(participants))
         .catch(err => res.status(500).send(err.message))
-}))
+})
 
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
