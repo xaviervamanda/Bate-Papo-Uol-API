@@ -117,5 +117,26 @@ app.get("/messages", async (req, res) => {
     }
 });
 
+app.post ("/status", async (req, res) => {
+    const {user} = req.headers;
+    
+    const lastStatus = { lastStatus: Date.now()};
+
+    if (!user){
+        return res.sendStatus(404);
+    }
+
+    try{
+        const userValidation = await db.collection("participants").findOne({name: user});
+        if (!userValidation){
+            return res.sendStatus(404);
+        }
+        await db.collection("participants").updateOne({name: user}, {$set: lastStatus});
+        return res.sendStatus(200);
+    } catch (err){
+        return res.status(500).send(err.message);
+    }
+});
+
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
