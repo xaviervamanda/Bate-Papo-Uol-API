@@ -53,7 +53,7 @@ app.post ("/participants", async (req, res) => {
     } catch (err) {
         return res.status(500).send(err.message);
     }
-})
+});
 
 app.get("/participants", async (req, res) => {
 
@@ -63,12 +63,12 @@ app.get("/participants", async (req, res) => {
     } catch (err) {
         return res.status(500).send(err.message);
     }
-})
+});
 
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body;
     const {user} = req.headers;
-    
+
     const message = {to, text, type};
 
     const messageSchema = joi.object({
@@ -94,7 +94,28 @@ app.post("/messages", async (req, res) => {
     } catch (err){
         return res.status(500).send(err.message);
     }
-})
+});
+
+app.get("/messages", async (req, res) => {
+    const {user} = req.headers;
+    const {limit} = req.query;
+
+    if (!limit || Number(limit) <= 0 || !(/^\d+$/.test(limit))){
+        return res.sendStatus(422);
+    }
+
+    try{
+        const permitedMessages = await db.collection("messages").find({$or: [{to: "Todos"}, {to: `${user}`}, {from: `${user}`}]}).toArray();
+        if (limit){
+            const messages = [...permitedMessages];
+            messages.reverse();
+            return res.send(messages.slice(0,Number(limit)));
+        }
+        return res.send(permitedMessages);
+    } catch (err){
+        return res.status(500).send(err.message);
+    }
+});
 
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
