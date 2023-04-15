@@ -138,5 +138,25 @@ app.post ("/status", async (req, res) => {
     }
 });
 
+setInterval(async () => {
+    try{
+        const now = Date.now();
+        const desativeParticipants = await db.collection("participants").find({lastStatus: {$lt: (now-10)}}).toArray();
+        desativeParticipants.forEach(async (participant) => {
+            await db.collection("participants").deleteOne({name: participant.name});
+            const statusMessage = {
+                from: participant.name,
+                to: 'Todos',
+                text: 'sai da sala...',
+                type: 'status',
+                time: dateTime
+            };
+            await db.collection("messages").insertOne(statusMessage);
+        });
+    } catch (err){
+        return res.status(500).send(err.message);
+    }
+    
+}, 15000)
 
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
