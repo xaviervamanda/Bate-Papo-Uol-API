@@ -141,7 +141,7 @@ app.post ("/status", async (req, res) => {
 setInterval(async () => {
     try{
         const now = Date.now();
-        const desativeParticipants = await db.collection("participants").find({lastStatus: {$lt: (now-10)}}).toArray();
+        const desativeParticipants = await db.collection("participants").find({lastStatus: {$lt: (now-10000)}}).toArray();
         desativeParticipants.forEach(async (participant) => {
             await db.collection("participants").deleteOne({name: participant.name});
             const statusMessage = {
