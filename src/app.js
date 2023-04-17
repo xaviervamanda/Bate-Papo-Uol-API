@@ -3,6 +3,7 @@ import cors from "cors";
 import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 import joi from "joi";
+import { stripHtml } from "string-strip-html";
 
 const app = express();
 const PORT = 5000;
@@ -31,7 +32,8 @@ const messageSchema = joi.object({
 
 app.post ("/participants", async (req, res) => {
     const {name} = req.body;
-    const participant = {name};
+    name = (stripHtml(name).result).trim();
+    const participant = {name};  
     const participantSchema = joi.object({
         name: joi.string().required()
     });
@@ -74,7 +76,9 @@ app.get("/participants", async (req, res) => {
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body;
     const {user} = req.headers;
-
+    to = (stripHtml(to).result).trim();
+    text = (stripHtml(text).result).trim();
+    type = (stripHtml(type).result).trim();
     const message = {to, text, type};
 
     const validation = messageSchema.validate(message);
@@ -161,6 +165,10 @@ app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     const {to, text, type} = req.body;
     const {user} = req.headers;
     const {ID_DA_MENSAGEM} = req.params;
+
+    to = (stripHtml(to).result).trim();
+    text = (stripHtml(text).result).trim();
+    type = (stripHtml(type).result).trim();
 
     const updateMessage = {
         from: user,
