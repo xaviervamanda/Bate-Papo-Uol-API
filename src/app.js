@@ -23,6 +23,12 @@ const minutes = date.getMinutes();
 const seconds = date.getSeconds();
 const dateTime = `${hour}:${minutes}:${seconds}`;
 
+const messageSchema = joi.object({
+    to: joi.string().required(),
+    text: joi.string().required(),
+    type: joi.string().valid("message", "private_message").required()
+});
+
 app.post ("/participants", async (req, res) => {
     const {name} = req.body;
     const participant = {name};
@@ -70,12 +76,6 @@ app.post("/messages", async (req, res) => {
     const {user} = req.headers;
 
     const message = {to, text, type};
-
-    const messageSchema = joi.object({
-        to: joi.string().required(),
-        text: joi.string().required(),
-        type: joi.string().valid("message", "private_message").required()
-    });
 
     const validation = messageSchema.validate(message);
     if (validation.error){
@@ -157,9 +157,33 @@ app.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     
 });
 
-app.put("/messages/ID_DA_MENSAGEM", (req, res) => {
-    
-})
+app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
+    const {to, text, type} = req.body;
+    const {user} = req.headers;
+    const {ID_DA_MENSAGEM} = req.params;
+
+    const updateMessage = {
+        from: user,
+        to,
+        text,
+        type,
+        time: dateTime
+    };
+
+    try{
+        const searchedMessage = await db.collection("messages").findOne({_id: new ObjectId(ID_DA_MENSAGEM)});
+        if (!searchedMessage){
+            return res.sendStatus(404);
+        }
+        if (searchedMessage.from !== user){
+            return res.sendStatus(401);
+        }
+        await db.collection("messages").updateOne(updateMessage)
+        return res.sendStatus(200);
+    } catch (err){
+        return res.status(500).send(err.message);
+    }
+});
 
 setInterval(async () => {
     try{
