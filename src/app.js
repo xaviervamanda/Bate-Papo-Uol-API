@@ -178,7 +178,7 @@ app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
         if (searchedMessage.from !== user){
             return res.sendStatus(401);
         }
-        await db.collection("messages").updateOne({_id: new ObjectId(ID_DA_MENSAGEM)}, updateMessage)
+        await db.collection("messages").updateOne({_id: new ObjectId(ID_DA_MENSAGEM)}, {$set: updateMessage});
         return res.sendStatus(200);
     } catch (err){
         return res.status(500).send(err.message);
