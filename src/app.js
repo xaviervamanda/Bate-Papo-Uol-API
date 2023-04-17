@@ -162,6 +162,14 @@ app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     const {user} = req.headers;
     const {ID_DA_MENSAGEM} = req.params;
 
+    const updateMessage = {
+        from: user,
+        to,
+        text,
+        type,
+        time: dateTime
+    };
+
     try{
         const searchedMessage = await db.collection("messages").findOne({_id: new ObjectId(ID_DA_MENSAGEM)});
         if (!searchedMessage){
@@ -170,7 +178,7 @@ app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
         if (searchedMessage.from !== user){
             return res.sendStatus(401);
         }
-        await db.collection("messages").updateOne({to, text, type})
+        await db.collection("messages").updateOne({_id: new ObjectId(ID_DA_MENSAGEM)}, updateMessage)
         return res.sendStatus(200);
     } catch (err){
         return res.status(500).send(err.message);
