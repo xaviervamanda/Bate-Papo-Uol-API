@@ -138,6 +138,29 @@ app.post ("/status", async (req, res) => {
     }
 });
 
+app.delete("/messages/:ID_DA_MENSAGEM", async (req, res) => {
+    const {user} = req.headers;
+    const {ID_DA_MENSAGEM} = req.params;
+    try{
+        const searchedMessage = await db.collection("messages").findOne({_id: new ObjectId(ID_DA_MENSAGEM)});
+        if (!searchedMessage){
+            return res.sendStatus(404);
+        }
+        if (searchedMessage.from !== user){
+            return res.sendStatus(401);
+        }
+        await db.collection("messages").deleteOne({_id: new ObjectId(ID_DA_MENSAGEM)});
+        res.sendStatus(200);
+    } catch (err){
+        return res.status(500).send(err.message);
+    }
+    
+});
+
+app.put("/messages/ID_DA_MENSAGEM", (req, res) => {
+    
+})
+
 setInterval(async () => {
     try{
         const now = Date.now();
