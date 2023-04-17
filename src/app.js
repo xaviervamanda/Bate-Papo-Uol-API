@@ -32,16 +32,17 @@ const messageSchema = joi.object({
 
 app.post ("/participants", async (req, res) => {
     let {name} = req.body;
-    name = (stripHtml(name).result).trim();
-    const participant = {name};  
     const participantSchema = joi.object({
         name: joi.string().required()
     });
 
-    const validation = participantSchema.validate(participant, {abortEarly: false})
+    const validation = participantSchema.validate({name}, {abortEarly: false})
     if(validation.error){
         return res.sendStatus(422);
     }
+
+    name = (stripHtml(name).result).trim();
+    const participant = {name};
 
     try{
         if ((await db.collection("participants").findOne({name: { $regex: name, $options: "i" }})) !== null ){
@@ -76,15 +77,16 @@ app.get("/participants", async (req, res) => {
 app.post("/messages", async (req, res) => {
     let {to, text, type} = req.body;
     const {user} = req.headers;
+
+    const validation = messageSchema.validate({to, text, type});
+    if (validation.error){
+        return res.sendStatus(422);
+    }
+
     to = (stripHtml(to).result).trim();
     text = (stripHtml(text).result).trim();
     type = (stripHtml(type).result).trim();
     const message = {to, text, type};
-
-    const validation = messageSchema.validate(message);
-    if (validation.error){
-        return res.sendStatus(422);
-    }
 
     try{
         const userValidation = await db.collection("participants").findOne({name: user});
@@ -165,6 +167,11 @@ app.put("/messages/:ID_DA_MENSAGEM", async (req, res) => {
     let {to, text, type} = req.body;
     const {user} = req.headers;
     const {ID_DA_MENSAGEM} = req.params;
+
+    const validation = messageSchema.validate({to, text, type});
+    if (validation.error){
+        return res.sendStatus(422);
+    }
 
     to = (stripHtml(to).result).trim();
     text = (stripHtml(text).result).trim();
